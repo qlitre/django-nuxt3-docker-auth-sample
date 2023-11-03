@@ -1,0 +1,53 @@
+version: "3"
+services:
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    command: bash -c "python manage.py migrate && python manage.py collectstatic --no-input --clear && python manage.py runserver  0.0.0.0:8000"   
+    ports:
+      - "8000:8000"
+    volumes:
+      - static:/code/static_root
+      - media:/code/media
+    environment:
+      - DJANGO_SETTINGS_MODULE=project.settings
+    depends_on:
+      - db
+
+
+  frontend:
+    build: ./frontend
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "3000:3000"
+    command: bash -c "yarn dev"
+    environment:
+      - API_BASE_URL=/api
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx_conf:/etc/nginx/conf.d
+      - static:/code/static_root
+      - media:/code/media
+      
+    depends_on:
+      - backend
+      - frontend
+
+
+volumes:
+  static:
+  media:
+  pgdata:
