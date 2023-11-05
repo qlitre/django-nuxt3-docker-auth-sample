@@ -3,7 +3,7 @@ export type User = {
     last_name?: string;
     first_name?: string;
     email?: string;
-    is_staff?: boolean;
+    auth_token?: string;
 }
 
 export type CheckAuthResponse = {

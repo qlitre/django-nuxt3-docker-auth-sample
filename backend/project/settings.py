@@ -1,7 +1,7 @@
 from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent.parent
 
+BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-z84!52@w2f*&f7ecswc@)@t)%wasw2rjqv@q+mrdll6j7exja9'
 
 DEBUG = True
@@ -17,6 +17,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',  # 追加
+    'rest_framework.authtoken',  # 追加
+    'djoser',  # 追加
     'account.apps.AccountConfig',  # 追加
 ]
 
@@ -101,17 +103,27 @@ AUTH_USER_MODEL = 'account.User'
 INSTALLED_APPS += ['corsheaders']
 MIDDLEWARE = ['corsheaders.middleware.CorsMiddleware'] + MIDDLEWARE
 
+# 追加
 REST_FRAMEWORK = {
-    # Enable Session Authentication for App
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
     ],
-    # Enable IsAuthenticated Permission
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
-    # Disable Browsable API and Render JSON
-    'DEFAULT_RENDERER_CLASSES': ('rest_framework.renderers.JSONRenderer',),
+}
+DOMAIN = "localhost:3000"
+SITE_NAME = "Example"
+DJOSER = {
+    'PASSWORD_RESET_CONFIRM_URL': 'account/reset_password/{uid}/{token}',
+    'PASSWORD_RESET_SHOW_EMAIL_NOT_FOUND': True,
+    'ACTIVATION_URL': 'account/activate/{uid}/{token}',
+    'SEND_ACTIVATION_EMAIL': True,
+    'EMAIL': {
+        'activation': 'account.email.ActivationEmail',
+        'password_reset': 'account.email.PasswordResetEmail'
+    },
+    'SERIALIZERS': {},
 }
 
 CORS_ORIGIN_WHITELIST = (
@@ -137,6 +149,3 @@ CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1', 'http://localhost:3000']
 CSRF_USE_SESSIONS = False
 CSRF_COOKIE_SECURE = True  # For Production set True
 SESSION_COOKIE_SECURE = True  # For Production set True
-
-SITE_DOMAIN = "http://localhost:3000"
-SITE_NAME = "Local Host"

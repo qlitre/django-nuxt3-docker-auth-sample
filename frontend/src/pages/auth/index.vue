@@ -2,14 +2,9 @@
 
 import { useUserStore } from "@/stores/user";
 
-definePageMeta({
-    middleware: ["checkauth"],
-});
-
 const userStore = useUserStore();
 const lastName = userStore.user.last_name
 const firstName = userStore.user.first_name
-
 </script>
 
 <template>

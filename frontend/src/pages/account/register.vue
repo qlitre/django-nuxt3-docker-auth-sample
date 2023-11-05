@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import useAuthApi from "~/composables/useAuthApi";
+
+import { checkStatusOK } from '../../utils/checkStatusOK';
+import { getErrorMessageArray } from '../../utils/getErrorMessageArray'
 
 definePageMeta({
   layout: 'account-layout'
@@ -10,24 +12,25 @@ const firstName = ref('')
 const password = ref('');
 const email = ref('');
 const confirmPassword = ref('');
-const serverError: Ref<string | null> = ref(null);
+const isError = ref(false)
 const isSuccess = ref(false)
+const errorMessage = ref<string[]>([])
 const submitRegistrationForm = async () => {
   const formData = {
     last_name: lastName.value,
     first_name: firstName.value,
     email: email.value,
     password: password.value,
-    confirm_password: confirmPassword.value,
+    re_password: confirmPassword.value,
   }
-  const { data, pending, error, refresh } = await useAuthApi('registration/', 'POST', formData)
-  if (error.value) {
-    isSuccess.value = false;
-    serverError.value = error.value.data.detail;
-  }
-  if (data.value) {
-    isSuccess.value = true;
-    serverError.value = null;
+  const res = await useUserCreate(formData)
+  if (checkStatusOK(res.status)) {
+    isSuccess.value = true
+    isError.value = false
+  } else {
+    isError.value = true
+    isSuccess.value = false
+    errorMessage.value = getErrorMessageArray(res.body)
   }
 };
 </script>
@@ -59,8 +62,10 @@ const submitRegistrationForm = async () => {
       既にアカウントをお持ちですか？
       <NuxtLink to="/account/login">Login</NuxtLink>
     </i>
-    <v-alert v-if="serverError" type="error" dense class="mt-2" variant="tonal">
-      {{ serverError }}
+    <v-alert v-if="isError" type="error" dense class="mt-2" variant="tonal">
+      <ul>
+        <li v-for="message in errorMessage" :key="message">{{ message }}</li>
+      </ul>
     </v-alert>
     <v-alert v-if="isSuccess" type="success" dense class="mt-2" variant="tonal">
       ありがとうございます。Emailを確認してアカウントを有効化してください。

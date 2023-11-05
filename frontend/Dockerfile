@@ -5,9 +5,6 @@ WORKDIR /frontend
 
 COPY . /frontend
 
-RUN rm -rf .git/
-RUN rm -rf node_modules
-
 RUN yarn install
 # RUN rm /tmp/nitro/worker-40-1.sock
 # RUN npx nuxi upgrade --force

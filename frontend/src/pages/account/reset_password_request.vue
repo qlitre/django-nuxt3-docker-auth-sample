@@ -1,25 +1,30 @@
 <script setup lang="ts">
-import { Ref } from 'vue'
+
+import { checkStatusOK } from '../../utils/checkStatusOK';
+import { getErrorMessageArray } from '../../utils/getErrorMessageArray'
 
 definePageMeta({
   layout: 'account-layout'
 });
 
-const isSuccess: Ref<boolean> = ref(false);
-const serverError: Ref<boolean | null> = ref(false);
-const email: Ref<string> = ref('');
+const isSuccess = ref(false);
+const isError = ref(false);
+const email = ref('');
+const errorMessage = ref<string[]>([])
+
 const submitResetPasswordForm = async () => {
   const formData = {
     email: email.value,
   }
-  const { data, pending, error, refresh } = await useAuthApi('reset_password/', 'POST', formData)
-  if (error.value) {
-    isSuccess.value = false;
-    serverError.value = error.value.data;
-  }
-  if (data.value) {
+  const res = await useSendPasswordResetEmail(formData);
+  if (checkStatusOK(res.status)) {
     isSuccess.value = true;
-    serverError.value = null;
+    isError.value = false;
+  } else {
+    isSuccess.value = false;
+    isError.value = true;
+    console.log(res.body);
+    errorMessage.value = getErrorMessageArray(res.body);
   }
 };
 </script>
@@ -34,11 +39,13 @@ const submitResetPasswordForm = async () => {
       <v-btn type="submit" color="primary" block class="mt-8">
         Send Email
       </v-btn>
-      <v-alert v-if="serverError" type="error" class="mt-2" dense variant="tonal">
-        Unable to Send Email
+      <v-alert v-if="isError" type="error" dense class="mt-2" variant="tonal">
+        <ul>
+          <li v-for="message in errorMessage" :key="message">{{ message }}</li>
+        </ul>
       </v-alert>
       <v-alert v-if="isSuccess" type="success" class="mt-2" dense variant="tonal">
-        Password reset email sent! Kindly check your email.
+        パスワードリセット用のメールを送付しました。ご確認ください。
       </v-alert>
     </v-form>
   </div>

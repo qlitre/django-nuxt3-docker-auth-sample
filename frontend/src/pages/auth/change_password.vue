@@ -1,24 +1,28 @@
 <script setup lang="ts">
 
-const serverError: Ref<string | null> = ref(null);
+import { getErrorMessageArray } from '../../utils/getErrorMessageArray'
+import { checkStatusOK } from '../../utils/checkStatusOK'
+
+const errorMessage = ref<string[]>([])
+
+const isError = ref(false);
 const isSuccess = ref(false);
 const oldPassword = ref('');
 const newPassword = ref('');
 
 const submitChangePasswordForm = async () => {
   const formData = {
-    old_password: oldPassword.value,
+    current_password: oldPassword.value,
     new_password: newPassword.value,
   }
-
-  const { data, pending, error, refresh } = await useAuthApi('change_password/', 'POST', formData)
-  if (error.value) {
-    isSuccess.value = false;
-    serverError.value = error.value.data;
-  }
-  if (data.value) {
+  const res = await useSetPassword(formData);
+  if (checkStatusOK(res.status)) {
     isSuccess.value = true;
-    serverError.value = null;
+    isError.value = false;
+  } else {
+    isError.value = true;
+    isSuccess.value = false;
+    errorMessage.value = getErrorMessageArray(res.body);
   }
 };
 </script>
@@ -36,8 +40,10 @@ const submitChangePasswordForm = async () => {
           <v-btn type="submit" color="primary" block class="mt-8" :disabled="!oldPassword || !newPassword">
             送信
           </v-btn>
-          <v-alert v-if="serverError" type="error" class="mt-2" dense variant="tonal">
-            {{ serverError }}
+          <v-alert v-if="isError" type="error" dense class="mt-2" variant="tonal">
+            <ul>
+              <li v-for="message in errorMessage" :key="message">{{ message }}</li>
+            </ul>
           </v-alert>
           <v-alert v-if="isSuccess" type="success" class="mt-2" dense variant="tonal">
             パスワードの変更が完了しました。

@@ -9,6 +9,7 @@ db.sqlite3
 /media
 .env
 .idea
+static_root
 
 # Nuxt dev/build outputs
 .output

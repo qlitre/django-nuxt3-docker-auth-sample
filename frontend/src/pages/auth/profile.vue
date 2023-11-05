@@ -1,26 +1,30 @@
 <script setup lang="ts">
 import { useUserStore } from "@/stores/user";
-import type { Ref } from 'vue';
+import { getErrorMessageArray } from '../../utils/getErrorMessageArray'
+import { checkStatusOK } from '../../utils/checkStatusOK'
+
+const errorMessage = ref<string[]>([])
 
 const userStore = useUserStore();
 const lastName = ref(userStore.user.last_name);
 const firstName = ref(userStore.user.first_name);
-const serverError: Ref<string | null> = ref(null);
+const isError = ref(false)
 const isSuccess = ref(false);
 const submitProfileForm = async () => {
+  if (!lastName.value || !firstName.value) return
   const formData = {
     first_name: firstName.value,
     last_name: lastName.value,
   }
-  const { data, pending, error, refresh } = await useAuthApi('user/', 'PATCH', formData)
-  if (error.value) {
-    isSuccess.value = false;
-    serverError.value = error.value.data.detail;
-  }
-  if (data.value) {
+  const res = await useUpdateUserName(formData);
+  if (checkStatusOK(res.status)) {
     isSuccess.value = true;
-    serverError.value = null;
-
+    isError.value = false;
+    userStore.setUser(res.body);
+  } else {
+    isSuccess.value = false;
+    isError.value = true;
+    errorMessage.value = getErrorMessageArray(res.body);
   }
 };
 </script>
@@ -35,12 +39,13 @@ const submitProfileForm = async () => {
             required></v-text-field>
           <v-text-field label="名" v-model="firstName" :rules="[v => !!v || '名は必須です']" placeholder="ユーザー名"
             required></v-text-field>
-
           <v-btn type="submit" color="primary" block class="mt-8">
             更新
           </v-btn>
-          <v-alert v-if="serverError" type="error" class="mt-2" dense variant="tonal">
-            {{ serverError }}
+          <v-alert v-if="isError" type="error" dense class="mt-2" variant="tonal">
+            <ul>
+              <li v-for="message in errorMessage" :key="message">{{ message }}</li>
+            </ul>
           </v-alert>
           <v-alert v-if="isSuccess" type="success" class="mt-2" dense variant="tonal">
             プロフィールアップデートが完了しました。

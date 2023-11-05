@@ -68,14 +68,24 @@ class User(AbstractBaseUser, PermissionsMixin):
         verbose_name_plural = _('users')
 
     def get_full_name(self):
-        return f'{self.last_name} {self.first_name}'
+        """Return the first_name plus the last_name, with a space in
+        between."""
+        full_name = '%s %s' % (self.first_name, self.last_name)
+        return full_name.strip()
 
     def get_short_name(self):
+        """Return the short name for the user."""
         return self.first_name
 
     def email_user(self, subject, message, from_email=None, **kwargs):
+        """Send an email to this user."""
         send_mail(subject, message, from_email, [self.email], **kwargs)
 
     @property
     def username(self):
+        """username属性のゲッター
+
+        他アプリケーションが、username属性にアクセスした場合に備えて定義
+        メールアドレスを返す
+        """
         return self.email

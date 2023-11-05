@@ -1,37 +1,41 @@
 <script setup lang="ts">
-import { Ref } from 'vue'
+
+import { getErrorMessageArray } from '../../../../utils/getErrorMessageArray'
+import { checkStatusOK } from '../../../../utils/checkStatusOK'
 
 definePageMeta({
   layout: 'account-layout'
 });
 
-const isSuccess: Ref<boolean> = ref(false);
-const serverError: Ref<string | null> = ref(null);
-const newPassword: Ref<string> = ref('');
-const confirmPassword: Ref<string> = ref('');
+const errorMessage = ref<string[]>([])
+const isSuccess = ref(false);
+const isError = ref(false);
+const { params } = useRoute()
+const uid = params.uid.toString()
+const token = params.token.toString()
+const newPassword = ref('');
+const reNewPassword = ref('');
 
 const submitResetPasswordConfirmForm = async () => {
-  if (newPassword.value !== confirmPassword.value) return;
-  const { params } = useRoute()
+  if (newPassword.value !== reNewPassword.value) return;
   const formData = {
+    uid: uid,
+    token: token,
     new_password: newPassword.value,
-    confirm_password: confirmPassword.value,
+    re_new_password: reNewPassword.value,
   }
-  const payload = {
-    ...formData,
-    ...params
-  }
-  const { data, pending, error, refresh } = await useAuthApi('reset_password_confirm/', 'POST', payload)
-  if (error.value) {
-    isSuccess.value = false;
-    serverError.value = error.value.data.detail;
-  }
-  if (data.value) {
+  const res = await useResetPasswordConfirm(formData);
+  if (checkStatusOK(res.status)) {
     isSuccess.value = true;
-    serverError.value = null;
+    isError.value = false;
+    // 5秒後にログインページに移動
     setTimeout(() => {
       return navigateTo("/account/login", { replace: true });
     }, 5000);
+  } else {
+    isSuccess.value = false;
+    isError.value = true;
+    errorMessage.value = getErrorMessageArray(res.body);
   }
 };
 </script>
@@ -42,15 +46,17 @@ const submitResetPasswordConfirmForm = async () => {
     <v-form ref="form" @submit.prevent="submitResetPasswordConfirmForm">
       <v-text-field label="Password" name="password" v-model="newPassword" type="password"
         :rules="[v => !!v || 'Password is required']" placeholder="Enter your password..." required></v-text-field>
-      <v-text-field label="Confirm Password" name="confirm_password" v-model="confirmPassword" type="password"
+      <v-text-field label="Confirm Password" name="confirm_password" v-model="reNewPassword" type="password"
         :rules="[v => !!v || 'Confirm Password is required', v => v === newPassword || 'Passwords must match']"
         placeholder="Re-enter your password..." required></v-text-field>
       <div class="text-center mt-8">
         <v-btn color="primary" @click="submitResetPasswordConfirmForm">パスワード変更</v-btn>
       </div>
     </v-form>
-    <v-alert v-if="serverError" type="error" dense class="mt-2" variant="tonal">
-      {{ serverError }}
+    <v-alert v-if="isError" type="error" dense class="mt-2" variant="tonal">
+      <ul>
+        <li v-for="message in errorMessage" :key="message">{{ message }}</li>
+      </ul>
     </v-alert>
     <v-alert v-if="isSuccess" type="success" dense class="mt-2" variant="tonal">
       パスワードのリセットが完了しました。5秒後にログインページに移動します。
