@@ -1,19 +1,17 @@
 import vuetify from 'vite-plugin-vuetify'
 
-// https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   srcDir: 'src/',
   ssr: false,
+  runtimeConfig: {
+    public: {
+      apiBase: process.env.API_BASE || 'http://localhost:8000/api'
+    }
+  },
   modules: [
     '@pinia/nuxt',
     '@pinia-plugin-persistedstate/nuxt',
   ],
-  //  // To fix samesite console error
-  //  piniaPersistedstate: {
-  //   cookieOptions: {
-  //     sameSite: "strict",
-  //   },
-  // },
   build: {
     transpile: ['vuetify'],
   },
@@ -30,5 +28,5 @@ export default defineNuxtConfig({
       'process.env.DEBUG': false,
     },
   },
-  css: ['@/assets/main.scss', 'material-design-icons-iconfont/dist/material-design-icons.css', 'highlight.js/styles/panda-syntax-dark.css'],
+  css: ['@/assets/main.scss', 'material-design-icons-iconfont/dist/material-design-icons.css',],
 })

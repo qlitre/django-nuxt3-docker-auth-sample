@@ -1,14 +1,5 @@
 version: "3.9"
 services:
-  db:
-    image: postgres
-    environment:
-      - POSTGRES_DB=postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-
   nginx:
     image: nginx:alpine
     ports:
@@ -17,7 +8,7 @@ services:
       - ./nginx_conf:/etc/nginx/conf.d
       - static:/code/static_root
       - media:/code/media
-      
+
     depends_on:
       - backend
       - frontend
@@ -26,4 +17,3 @@ services:
 volumes:
   static:
   media:
-  pgdata:

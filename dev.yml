@@ -2,7 +2,7 @@ version: "3.9"
 services:
   backend:
     build: ./backend
-    command: bash -c "python manage.py migrate && python manage.py collectstatic --no-input --clear && python manage.py runserver  0.0.0.0:8000"   
+    command: bash -c "python manage.py migrate && python manage.py collectstatic --no-input --clear && python manage.py runserver  0.0.0.0:8000"
     ports:
       - "8000:8000"
     volumes:
@@ -10,9 +10,7 @@ services:
       - media:/code/media
     environment:
       - DJANGO_SETTINGS_MODULE=project.settings
-    depends_on:
-      - db
-
+      - DOMAIN=127.0.0.1
 
   frontend:
     build: ./frontend
@@ -22,5 +20,6 @@ services:
       - "3000:3000"
       - "24678:24678" # HMR用のポートを追加
     command: bash -c "yarn dev"
-    environment:
-      - API_BASE_URL=/api
+    env_file:
+      - ./frontend/.env.docker
+    working_dir: /frontend

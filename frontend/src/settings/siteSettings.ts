@@ -1,3 +1,4 @@
-// 環境変数がないときは、ローカルホストの8000ポートを指定
-export const baseUrl = process.env.BASE_URL || "http://localhost:8000/api"
+const ctx = useRuntimeConfig();
+export const baseUrl = ctx.public.apiBase
 export const AUTH_BASE_URL = baseUrl + '/auth/'
+export const CORE_BASE_URL = baseUrl + '/core/'

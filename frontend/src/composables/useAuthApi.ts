@@ -8,18 +8,12 @@ const getauthToken = () => {
   return userStore.user.auth_token
 }
 
-type Headers = {
-  'Content-Type': string;
-  Authorization?: string;
-}
-
 type BodyType = { [key: string]: any } | null;
 
 /**
  * リクエストを送信する
  */
 const baseFetch = async (url: string, method: string, body: BodyType = {}, useToken: boolean = false, authToken: string = '') => {
-
   const headers: HeadersInit = {
     'Content-Type': 'application/json'
   };
@@ -42,7 +36,7 @@ const baseFetch = async (url: string, method: string, body: BodyType = {}, useTo
 
   try {
     const response = await fetch(url, fetchOptions);
-
+    console.log(response)
     if (!response.ok) {
       // Error body might not be JSON
       const errorText = await response.text();

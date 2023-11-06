@@ -1,5 +1,5 @@
 from pathlib import Path
-
+import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-z84!52@w2f*&f7ecswc@)@t)%wasw2rjqv@q+mrdll6j7exja9'
@@ -20,6 +20,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',  # 追加
     'djoser',  # 追加
     'account.apps.AccountConfig',  # 追加
+    'core.apps.CoreConfig',  # 追加
 ]
 
 MIDDLEWARE = [
@@ -112,8 +113,10 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ),
 }
-DOMAIN = "localhost:3000"
+DOMAIN = os.environ.get('DOMAIN', "localhost:3000")
+
 SITE_NAME = "Example"
+
 DJOSER = {
     'PASSWORD_RESET_CONFIRM_URL': 'account/reset_password/{uid}/{token}',
     'PASSWORD_RESET_SHOW_EMAIL_NOT_FOUND': True,
