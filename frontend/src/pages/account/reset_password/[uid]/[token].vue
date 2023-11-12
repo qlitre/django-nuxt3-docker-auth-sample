@@ -1,7 +1,6 @@
 <script setup lang="ts">
 
 import { getErrorMessageArray } from '../../../../utils/getErrorMessageArray'
-import { checkStatusOK } from '../../../../utils/checkStatusOK'
 
 definePageMeta({
   layout: 'account-layout'
@@ -25,18 +24,18 @@ const submitResetPasswordConfirmForm = async () => {
     re_new_password: reNewPassword.value,
   }
   const res = await useResetPasswordConfirm(formData);
-  if (checkStatusOK(res.status)) {
-    isSuccess.value = true;
-    isError.value = false;
-    // 5秒後にログインページに移動
-    setTimeout(() => {
-      return navigateTo("/account/login", { replace: true });
-    }, 5000);
-  } else {
+  if (res.error) {
     isSuccess.value = false;
     isError.value = true;
-    errorMessage.value = getErrorMessageArray(res.body);
+    errorMessage.value = getErrorMessageArray(res.error);
+    return
   }
+  isSuccess.value = true;
+  isError.value = false;
+  // 5秒後にログインページに移動
+  setTimeout(() => {
+    return navigateTo("/account/login", { replace: true });
+  }, 5000);
 };
 </script>
 

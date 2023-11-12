@@ -1,6 +1,5 @@
 <script setup lang="ts">
 
-import { checkStatusOK } from '../../utils/checkStatusOK';
 import { getErrorMessageArray } from '../../utils/getErrorMessageArray'
 
 definePageMeta({
@@ -17,15 +16,14 @@ const submitResetPasswordForm = async () => {
     email: email.value,
   }
   const res = await useSendPasswordResetEmail(formData);
-  if (checkStatusOK(res.status)) {
-    isSuccess.value = true;
-    isError.value = false;
-  } else {
+  if (res.error) {
     isSuccess.value = false;
     isError.value = true;
-    console.log(res.body);
-    errorMessage.value = getErrorMessageArray(res.body);
+    errorMessage.value = getErrorMessageArray(res.error);
+    return
   }
+  isSuccess.value = true;
+  isError.value = false;
 };
 </script>
 

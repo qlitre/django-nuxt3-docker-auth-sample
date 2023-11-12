@@ -1,6 +1,5 @@
 <script setup lang="ts">
 
-import { checkStatusOK } from '../../utils/checkStatusOK';
 import { getErrorMessageArray } from '../../utils/getErrorMessageArray'
 
 definePageMeta({
@@ -24,14 +23,14 @@ const submitRegistrationForm = async () => {
     re_password: confirmPassword.value,
   }
   const res = await useUserCreate(formData)
-  if (checkStatusOK(res.status)) {
-    isSuccess.value = true
-    isError.value = false
-  } else {
+  if (res.error) {
     isError.value = true
     isSuccess.value = false
-    errorMessage.value = getErrorMessageArray(res.body)
+    errorMessage.value = getErrorMessageArray(res.error)
+    return
   }
+  isSuccess.value = true
+  isError.value = false
 };
 </script>
 

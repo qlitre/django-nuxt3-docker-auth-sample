@@ -18,18 +18,18 @@ const onAccountActivation = async () => {
     token: params.token.toString(),
   }
   const res = await useUserActivate(body)
-  if (checkStatusOK(res.status)) {
-    isSuccess.value = true;
-    isError.value = false;
-    // 5秒後にログインページに移動
-    setTimeout(() => {
-      return navigateTo("/account/login", { replace: true });
-    }, 5000);
-  } else {
-    isError.value = true;
-    isSuccess.value = false;
-    errorMessage.value = getErrorMessageArray(res.body);
+  if (res.error) {
+    isError.value = true
+    isSuccess.value = false
+    errorMessage.value = getErrorMessageArray(res.error)
+    return
   }
+  isSuccess.value = true;
+  isError.value = false;
+  // 5秒後にログインページに移動
+  setTimeout(() => {
+    return navigateTo("/account/login", { replace: true });
+  }, 5000);
 };
 </script>
 

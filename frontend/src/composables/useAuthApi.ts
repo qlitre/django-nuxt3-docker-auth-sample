@@ -1,67 +1,30 @@
-import { useAuthStore } from "~/stores/auth"
+import { useAuthStore } from "~/stores/auth";
 import { useUserStore } from "@/stores/user";
 import { AUTH_BASE_URL } from "~/settings/siteSettings";
-
+import type {
+  LoginResponse,
+  LoginError,
+  UserMeResponse,
+  UserMeError,
+  UserUpdateResponse,
+  UserUpdateError,
+  UserCreateResponse,
+  UserCreateError,
+  UserActivateResponse,
+  UserActivateError,
+  ResetPasswordResponse,
+  ResetPasswordError,
+  ResetPasswordConfirmResponse,
+  ResetPasswordConfirmError,
+  SetPasswordResponse,
+  SetPasswordError,
+  LogoutResponse,
+  LogoutError
+} from "~/types/account";
 
 const getauthToken = () => {
   const userStore = useUserStore()
   return userStore.user.auth_token
-}
-
-type BodyType = { [key: string]: any } | null;
-
-/**
- * リクエストを送信する
- */
-const baseFetch = async (url: string, method: string, body: BodyType = {}, useToken: boolean = false, authToken: string = '') => {
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json'
-  };
-
-  if (authToken) {
-    headers['Authorization'] = `Token ${authToken}`;
-  } else if (useToken) {
-    const token = getauthToken();
-    headers['Authorization'] = `Token ${token}`;
-  }
-
-  const fetchOptions: RequestInit = {
-    method: method,
-    headers: headers,
-  };
-
-  if (method !== 'GET') {
-    fetchOptions['body'] = JSON.stringify(body);
-  }
-
-  try {
-    const response = await fetch(url, fetchOptions);
-    console.log(response)
-    if (!response.ok) {
-      // Error body might not be JSON
-      const errorText = await response.text();
-      try {
-        const errorBody = JSON.parse(errorText); // Try parsing as JSON
-        return { status: response.status, body: errorBody };
-      } catch {
-        return { status: response.status, body: errorText }; // Not JSON, return as text
-      }
-    }
-
-    const contentType = response.headers.get("Content-Type");
-    let data;
-    if (contentType && contentType.includes("application/json")) {
-      data = await response.json();
-    } else {
-      // If not JSON, read as text
-      data = await response.text();
-    }
-    return { status: response.status, body: data };
-
-  } catch (error) {
-    console.error("Network error:", error);
-    return { status: 0, body: null };
-  }
 }
 
 /**
@@ -70,7 +33,20 @@ const baseFetch = async (url: string, method: string, body: BodyType = {}, useTo
 export const useLogin = async (body: { email: string, password: string }) => {
   const endpoint = 'token/login/'
   const url = AUTH_BASE_URL + endpoint
-  return await baseFetch(url, 'POST', body)
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+  const { data, error } = await useFetch<LoginResponse, LoginError>(url, {
+    method: 'POST',
+    headers: headers,
+    body: body,
+    key: crypto.randomUUID(),
+  })
+  if (error.value) {
+    return { error: error.value.data, data: null }
+  } else {
+    return { data: data.value }
+  }
 }
 
 /**
@@ -79,7 +55,17 @@ export const useLogin = async (body: { email: string, password: string }) => {
 export const useGetUser = async (token: string) => {
   const endpoint = 'users/me/'
   const url = AUTH_BASE_URL + endpoint
-  return await baseFetch(url, 'GET', {}, false, token)
+  const headers = {
+    'Content-Type': 'application/json',
+    'Authorization': `Token ${token}`
+  }
+  const { data, error } = await useFetch<UserMeResponse, UserMeError>(url,
+    { headers: headers, key: crypto.randomUUID() }
+  )
+  if (error.value) {
+    return { error: error.value.data, data: null }
+  }
+  return { data: data.value }
 }
 
 /**
@@ -88,7 +74,21 @@ export const useGetUser = async (token: string) => {
 export const useUpdateUserName = async (body: { first_name: string, last_name: string }) => {
   const endpoint = 'users/me/'
   const url = AUTH_BASE_URL + endpoint
-  return await baseFetch(url, 'PATCH', body, true)
+  const token = getauthToken()
+  const headers = {
+    'Content-Type': 'application/json',
+    'Authorization': `Token ${token}`,
+  }
+  const { data, error } = await useFetch<UserUpdateResponse, UserUpdateError>(url, {
+    method: 'PATCH',
+    headers: headers,
+    body: body,
+    key: crypto.randomUUID(),
+  })
+  if (error.value) {
+    return { error: error.value.data, data: null }
+  }
+  return { data: data.value }
 }
 
 /**
@@ -99,11 +99,23 @@ export const useLogout = async () => {
   const authStore = useAuthStore()
   const endpoint = 'token/logout/'
   const url = AUTH_BASE_URL + endpoint
-  const res = await baseFetch(url, 'POST', {}, true)
+  const token = getauthToken()
+  const headers = {
+    'Content-Type': 'application/json',
+    'Authorization': `Token ${token}`,
+    key: crypto.randomUUID(),
+  }
+  const { data, error } = await useFetch<LogoutResponse, LogoutError>(url, {
+    method: 'POST',
+    headers: headers
+  })
+  if (error.value) {
+    return { error: error.value.data, data: null }
+  }
   authStore.setAuthenticated(false)
   authStore.$reset();
   userStore.$reset();
-  return res
+  return { data: data.value }
 }
 
 /**
@@ -112,7 +124,19 @@ export const useLogout = async () => {
 export const useSendPasswordResetEmail = async (body: { email: string }) => {
   const endpoint = 'users/reset_password/'
   const url = AUTH_BASE_URL + endpoint
-  return await baseFetch(url, 'POST', body)
+  const headers = {
+    'Content-Type': 'application/json',
+  }
+  const { data, error } = await useFetch<ResetPasswordResponse, ResetPasswordError>(url, {
+    method: 'POST',
+    headers: headers,
+    body: body,
+    key: crypto.randomUUID(),
+  })
+  if (error.value) {
+    return { error: error.value.data, data: null }
+  }
+  return { data: data.value }
 }
 
 /**
@@ -121,7 +145,19 @@ export const useSendPasswordResetEmail = async (body: { email: string }) => {
 export const useResetPasswordConfirm = async (body: { uid: string, token: string, new_password: string, re_new_password: string }) => {
   const endpoint = 'users/reset_password_confirm/'
   const url = AUTH_BASE_URL + endpoint
-  return await baseFetch(url, 'POST', body)
+  const headers = {
+    'Content-Type': 'application/json',
+  }
+  const { data, error } = await useFetch<ResetPasswordConfirmResponse, ResetPasswordConfirmError>(url, {
+    method: 'POST',
+    headers: headers,
+    body: body,
+    key: crypto.randomUUID(),
+  })
+  if (error.value) {
+    return { error: error.value.data, data: null }
+  }
+  return { data: data.value }
 }
 
 /**
@@ -130,7 +166,19 @@ export const useResetPasswordConfirm = async (body: { uid: string, token: string
 export const useUserCreate = async (body: { email: string, first_name: string, last_name: string, password: string, re_password: string }) => {
   const endpoint = 'users/'
   const url = AUTH_BASE_URL + endpoint
-  return await baseFetch(url, 'POST', body)
+  const headers = {
+    'Content-Type': 'application/json',
+  }
+  const { data, error } = await useFetch<UserCreateResponse, UserCreateError>(url, {
+    method: 'POST',
+    headers: headers,
+    body: body,
+    key: crypto.randomUUID(),
+  })
+  if (error.value) {
+    return { error: error.value.data, data: null }
+  }
+  return { data: data.value }
 }
 
 /**
@@ -139,7 +187,19 @@ export const useUserCreate = async (body: { email: string, first_name: string, l
 export const useUserActivate = async (body: { uid: string, token: string }) => {
   const endpoint = 'users/activation/'
   const url = AUTH_BASE_URL + endpoint
-  return await baseFetch(url, 'POST', body)
+  const headers = {
+    'Content-Type': 'application/json',
+  }
+  const { data, error } = await useFetch<UserActivateResponse, UserActivateError>(url, {
+    method: 'POST',
+    headers: headers,
+    body: body,
+    key: crypto.randomUUID(),
+  })
+  if (error.value) {
+    return { error: error.value.data, data: null }
+  }
+  return { data: data.value }
 }
 
 /**
@@ -148,5 +208,19 @@ export const useUserActivate = async (body: { uid: string, token: string }) => {
 export const useSetPassword = async (body: { current_password: string, new_password: string }) => {
   const endpoint = 'users/set_password/'
   const url = AUTH_BASE_URL + endpoint
-  return await baseFetch(url, 'POST', body, true)
+  const token = getauthToken()
+  const headers = {
+    'Content-Type': 'application/json',
+    'Authorization': `Token ${token}`,
+  }
+  const { data, error } = await useFetch<SetPasswordResponse, SetPasswordError>(url, {
+    method: 'POST',
+    headers: headers,
+    body: body,
+    key: crypto.randomUUID(),
+  })
+  if (error.value) {
+    return { error: error.value.data, data: null }
+  }
+  return { data: data.value }
 }

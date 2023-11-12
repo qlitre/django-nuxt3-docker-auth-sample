@@ -1,7 +1,6 @@
 <script setup lang="ts">
 
 import { getErrorMessageArray } from '../../utils/getErrorMessageArray'
-import { checkStatusOK } from '../../utils/checkStatusOK'
 
 const errorMessage = ref<string[]>([])
 
@@ -16,14 +15,14 @@ const submitChangePasswordForm = async () => {
     new_password: newPassword.value,
   }
   const res = await useSetPassword(formData);
-  if (checkStatusOK(res.status)) {
-    isSuccess.value = true;
-    isError.value = false;
-  } else {
+  if (res.error) {
     isError.value = true;
     isSuccess.value = false;
-    errorMessage.value = getErrorMessageArray(res.body);
+    errorMessage.value = getErrorMessageArray(res.error);
+    return
   }
+  isSuccess.value = true;
+  isError.value = false;
 };
 </script>
 

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useUserStore } from "@/stores/user";
 import { getErrorMessageArray } from '../../utils/getErrorMessageArray'
-import { checkStatusOK } from '../../utils/checkStatusOK'
 
 const errorMessage = ref<string[]>([])
 
@@ -17,14 +16,16 @@ const submitProfileForm = async () => {
     last_name: lastName.value,
   }
   const res = await useUpdateUserName(formData);
-  if (checkStatusOK(res.status)) {
-    isSuccess.value = true;
-    isError.value = false;
-    userStore.setUser(res.body);
-  } else {
+  if (res.error) {
     isSuccess.value = false;
     isError.value = true;
-    errorMessage.value = getErrorMessageArray(res.body);
+    errorMessage.value = getErrorMessageArray(res.error);
+
+  } else {
+    isSuccess.value = true;
+    isError.value = false;
+    if (!res.data) return
+    userStore.setUser(res.data);
   }
 };
 </script>

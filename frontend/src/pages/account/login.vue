@@ -1,7 +1,6 @@
 <script setup lang="ts">
 
 import { getErrorMessageArray } from '../../utils/getErrorMessageArray'
-import { checkStatusOK } from '../../utils/checkStatusOK'
 
 definePageMeta({
   layout: 'account-layout'
@@ -23,24 +22,27 @@ const submitLoginForm = async () => {
     password: password.value,
   }
   const res = await useLogin(formData);
-  if (checkStatusOK(res.status)) {
-    const authToken = res.body.auth_token
-    const userRes = await useGetUser(authToken)
-    isError.value = false
-    if (checkStatusOK(userRes.status)) {
-      isError.value = false
-      const user = userRes.body
-      authStore.setAuthenticated(true)
-      user.auth_token = authToken
-      userStore.setUser(user)
-      return navigateTo("/auth", { replace: true });
-    } else {
-      isError.value = true
-      errorMessage.value = getErrorMessageArray(userRes.body)
-    }
-  } else {
+  if (res.error) {
     isError.value = true
-    errorMessage.value = getErrorMessageArray(res.body)
+    errorMessage.value = getErrorMessageArray(res.error)
+    return
+  }
+  const authToken = res.data?.auth_token
+  if (!authToken) return
+  const userRes = await useGetUser(authToken)
+  isError.value = false
+  if (userRes.error) {
+    isError.value = true
+    errorMessage.value = getErrorMessageArray(userRes.error)
+    return
+  } else {
+    isError.value = false
+    const user = userRes.data
+    if (!user) return
+    authStore.setAuthenticated(true)
+    user.auth_token = authToken
+    userStore.setUser(user)
+    return navigateTo("/auth", { replace: true });
   }
 };
 
