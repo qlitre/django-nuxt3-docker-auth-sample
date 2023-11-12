@@ -1,6 +1,7 @@
 <script setup lang="ts">
 
 import { getErrorMessageArray } from '../../utils/getErrorMessageArray'
+import { requiredEmail, validEmail, requiredPassword } from '~/utils/formRules';
 
 definePageMeta({
   layout: 'account-layout'
@@ -46,26 +47,16 @@ const submitLoginForm = async () => {
   }
 };
 
-const requiredEmail = (v: string) => {
-  return !!v || 'Eメールは必須です'
-}
-
-const validEmail = (v: string) => {
-  return /.+@.+/.test(v) || '有効なEメールアドレスを入力してください';
-}
-
 </script>
 
 <template>
   <div class="mt-16">
     <h1 class="text-center font-weight-bold mb-5">ログイン</h1>
     <v-form @submit.prevent="submitLoginForm" id="loginForm">
-      <v-text-field v-model="email" label="Email" name="email" type="email" r equired :rules="[requiredEmail, validEmail]"
-        placeholder="Email" class="mb-2"></v-text-field>
-
-      <v-text-field v-model="password" label="Password" name="password" type="password" required
-        :rules="[v => !!v || 'パスワードは必須です']" placeholder="Password"></v-text-field>
-
+      <v-text-field v-model="email" name="email" type="email" required :rules="[requiredEmail, validEmail]"
+        placeholder="Email" class="mb-2" />
+      <v-text-field v-model="password" name="password" type="password" required :rules="[requiredPassword]"
+        placeholder="パスワード" />
       <div class="text-center mt-8">
         <v-btn block type="submit" color="primary">Login</v-btn>
       </div>

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 
 import { getErrorMessageArray } from '../../../../utils/getErrorMessageArray'
-import { checkStatusOK } from '../../../../utils/checkStatusOK'
 
 definePageMeta({
   layout: 'account-layout'

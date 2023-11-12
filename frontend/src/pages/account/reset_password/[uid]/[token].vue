@@ -1,6 +1,8 @@
 <script setup lang="ts">
 
 import { getErrorMessageArray } from '../../../../utils/getErrorMessageArray'
+import { requiredLastName, requiredFirstName, requiredEmail, validEmail, requiredPassword, requiredConfirmPassword, validPasswordMatch } from '~/utils/formRules';
+
 
 definePageMeta({
   layout: 'account-layout'
@@ -41,13 +43,13 @@ const submitResetPasswordConfirmForm = async () => {
 
 <template>
   <div class="mt-16">
-    <h1 class="text-center font-weight-bold mb-5">Reset Password</h1>
+    <h1 class="text-center font-weight-bold mb-5">パスワードリセット</h1>
     <v-form ref="form" @submit.prevent="submitResetPasswordConfirmForm">
-      <v-text-field label="Password" name="password" v-model="newPassword" type="password"
-        :rules="[v => !!v || 'Password is required']" placeholder="Enter your password..." required></v-text-field>
-      <v-text-field label="Confirm Password" name="confirm_password" v-model="reNewPassword" type="password"
-        :rules="[v => !!v || 'Confirm Password is required', v => v === newPassword || 'Passwords must match']"
-        placeholder="Re-enter your password..." required></v-text-field>
+      <v-text-field name="password" v-model="newPassword" type="password" :rules="[requiredPassword]" placeholder="パスワード"
+        required />
+      <v-text-field name="confirm_password" v-model="reNewPassword" type="password"
+        :rules="[requiredConfirmPassword, validPasswordMatch(reNewPassword, newPassword)]" placeholder="パスワード(確認)"
+        required />
       <div class="text-center mt-8">
         <v-btn color="primary" @click="submitResetPasswordConfirmForm">パスワード変更</v-btn>
       </div>

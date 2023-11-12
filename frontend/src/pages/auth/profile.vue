@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useUserStore } from "@/stores/user";
 import { getErrorMessageArray } from '../../utils/getErrorMessageArray'
+import { requiredFirstName, requiredLastName } from "~/utils/formRules";
 
 const errorMessage = ref<string[]>([])
 
@@ -36,10 +37,8 @@ const submitProfileForm = async () => {
       <v-col cols="12" md="6" lg="4">
         <h1 class="text-center font-weight-bold mb-5">プロフィール</h1>
         <v-form @submit.prevent="submitProfileForm">
-          <v-text-field label="姓" v-model="lastName" :rules="[v => !!v || '姓は必須です']" placeholder="ユーザー名"
-            required></v-text-field>
-          <v-text-field label="名" v-model="firstName" :rules="[v => !!v || '名は必須です']" placeholder="ユーザー名"
-            required></v-text-field>
+          <v-text-field v-model="lastName" :rules="[requiredLastName]" placeholder="姓" required />
+          <v-text-field v-model="firstName" :rules="[requiredFirstName]" placeholder="名" required />
           <v-btn type="submit" color="primary" block class="mt-8">
             更新
           </v-btn>

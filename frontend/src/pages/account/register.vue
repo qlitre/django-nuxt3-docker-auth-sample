@@ -1,6 +1,7 @@
 <script setup lang="ts">
 
 import { getErrorMessageArray } from '../../utils/getErrorMessageArray'
+import { requiredLastName, requiredFirstName, requiredEmail, validEmail, requiredPassword, requiredConfirmPassword, validPasswordMatch } from '~/utils/formRules';
 
 definePageMeta({
   layout: 'account-layout'
@@ -32,26 +33,21 @@ const submitRegistrationForm = async () => {
   isSuccess.value = true
   isError.value = false
 };
+
 </script>
 
 <template>
   <div class="mt-16">
     <h1 class="text-center font-weight-bold mb-5">会員登録</h1>
     <v-form id="registrationForm" @submit.prevent="submitRegistrationForm">
-      <v-text-field name="last_name" v-model="lastName" :rules="[v => !!v || '姓は必須です']" placeholder="姓"
-        required></v-text-field>
-      <v-text-field name="first_name" v-model="firstName" :rules="[v => !!v || '名は必須です']" placeholder="名"
-        required></v-text-field>
-      <v-text-field label="Email" name="email" v-model="email"
-        :rules="[v => !!v || 'Email is required', v => /.+@.+/.test(v) || 'Email must be valid']"
-        placeholder="Enter your email..." required></v-text-field>
-
-      <v-text-field label="Password" name="password" v-model="password" type="password"
-        :rules="[v => !!v || 'Password is required']" placeholder="Enter your password..." required></v-text-field>
-
-      <v-text-field label="Confirm Password" name="confirm_password" v-model="confirmPassword" type="password"
-        :rules="[v => !!v || 'Confirm Password is required', v => v === password || 'Passwords must match']"
-        placeholder="Re-enter your password..." required></v-text-field>
+      <v-text-field name="last_name" v-model="lastName" :rules="[requiredLastName]" placeholder="姓" required />
+      <v-text-field name="first_name" v-model="firstName" :rules="[requiredFirstName]" placeholder="名" required />
+      <v-text-field name="email" v-model="email" :rules="[requiredEmail, validEmail]" placeholder="Email" required />
+      <v-text-field name="password" v-model="password" type="password" :rules="[requiredPassword]" placeholder="パスワード"
+        required />
+      <v-text-field name="confirm_password" v-model="confirmPassword" type="password"
+        :rules="[requiredConfirmPassword, validPasswordMatch(confirmPassword, password)]" placeholder="パスワード(確認)"
+        required />
       <div class="text-center mt-8">
         <v-btn color="primary" @click="submitRegistrationForm">Register</v-btn>
       </div>
